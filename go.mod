@@ -1,3 +1,3 @@
-module zibai.study/go-tools
+module github.com/go-tools
 
 go 1.20
