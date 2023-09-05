@@ -14,6 +14,7 @@ import (
 	"math/rand"
 	"path/filepath"
 	"reflect"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 	"time"
 )
 
@@ -34,6 +35,28 @@ func NewKubeClient() (*kubernetes.Clientset, error) {
 
 	// create the clientset
 	return kubernetes.NewForConfig(config)
+}
+
+func NewRuntimeClient() client.Client {
+	var kubeconfig *string
+	if home := homedir.HomeDir(); home != "" {
+		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+	} else {
+		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	}
+	flag.Parse()
+
+	// use the current context in kubeconfig
+	config, err := clientcmd.BuildConfigFromFlags("", *kubeconfig)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	c, err := client.New(config, client.Options{})
+	if err != nil {
+		panic(err.Error())
+	}
+	return c
 }
 
 func PatchNodeStatus() {
